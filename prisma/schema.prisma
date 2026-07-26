@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User{
+  id Int @id @default(autoincrement())
+  username String @unique
+  fullname String
+  email String @unique
+  password String 
+  balance Decimal @default(10000.00) @db.Decimal(12,2)
+  otp String?
+  otpExpiry DateTime?
+  isVerified Boolean @default(false)
+  orders Orders[]
+  holdings Holdings[]
+  createdAt DateTime @default(now())
+}
+
+model Stocks{
+  id  Int @id @default(autoincrement())
+  symbol String @unique
+  name  String
+  order Orders[]
+  hold Holdings[]
+}
+enum OrderType{
+  BUY 
+  SELL
+}
+
+model Orders{
+  id Int @id @default(autoincrement())
+  customer User @relation(fields: [user_id] , references: [id])
+  user_id Int
+  stock_id Int
+  stockname Stocks @relation(fields: [stock_id], references: [id])
+  type OrderType
+  price Decimal
+  quantity Int 
+  created_at DateTime @default(now())
+}
+
+model Holdings{
+  id Int @id @default(autoincrement())
+  holder User @relation(fields: [user_id], references: [id])
+  user_id Int
+  stock_id Int
+  stockname Stocks @relation(fields: [stock_id], references: [id])
+  quantity Int
+  avg_buy_price Decimal
+ @@ unique([user_id, stock_id])
+
+}
