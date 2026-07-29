@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({
                 message: "Password length should be greater than or equal to 6 characters",
                 success: false
-            })
+            },{status:400})
         }
         const existingUser = await prisma.user.findUnique({
             where: {
@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
         const hashPassword = await bcrypt.hash(password, 10);
         const otp = crypto.randomInt(100000, 999999).toString();
         const otpExpiry = new Date(Date.now() + 15 * 60 * 1000)
-        const emailResponse.success = sendVerificationEmail({ email, fullname, otp })
-        if (!emailResponse) {
+        const emailResponse =await  sendVerificationEmail(email, fullname, otp )
+        if (!emailResponse.success) {
             return NextResponse.json({ message: "Unable to send verification E-mail . Please try again later", success: false }, { status: 400 })
         }
         const user = await prisma.user.create({
