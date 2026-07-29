@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SignJWT } from "jose";
 import { prisma } from '@/lib/prisma'
-
+import { Credentials } from "@/utils/validations";
 export async function POST(request: NextRequest) {
     try {
-        const { email, otp } = await request.json();
+        const { email, otp }:Credentials= await request.json();
         if (!email || !otp) {
             return NextResponse.json(
                 {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
                 }
             )
         }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        const emailRegex =/^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(email)) {
             return NextResponse.json({
                 message: "Invalid E-mail",
@@ -39,14 +39,14 @@ export async function POST(request: NextRequest) {
                 {
                     message: "Invalid OTP",
                     success: false
-                }, { status: 400 }
+                }, { status: 401 }
             )
         }
         if (!user.otpExpiry || user.otpExpiry < new Date()) {
             return NextResponse.json({
                 message: "OTP has expired",
                 success: false
-            }, { status: 400 })
+            }, { status: 401 })
         }
         const updatedUser = await prisma.user.update({
             where: { email },
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('OTP verification error:', error);
         return NextResponse.json(
-            { message: 'Internal server error' },
+            { message: 'Internal server error' , success:false },
             { status: 500 }
         );
     }

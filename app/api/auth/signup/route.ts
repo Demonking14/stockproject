@@ -3,12 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { sendVerificationEmail } from '@/utils/sendVerificationEmail';
-interface Credentials {
-    username: string
-    email: string
-    password: string
-    fullname: string
-}
+import { Credentials } from '@/utils/validations';
 export async function POST(req: NextRequest) {
     try {
         const { username, fullname, email, password }: Credentials = await req.json();
@@ -20,7 +15,7 @@ export async function POST(req: NextRequest) {
             }, { status: 400 })
 
         }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        const emailRegex =/^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(email)) {
             return NextResponse.json({
                 message: "Invalid E-mail",
@@ -43,7 +38,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({
                 message: "User already exist",
                 success: false
-            }, { status: 400 })
+            }, { status: 409 })
 
         }
         const hashPassword = await bcrypt.hash(password, 10);
@@ -51,7 +46,7 @@ export async function POST(req: NextRequest) {
         const otpExpiry = new Date(Date.now() + 15 * 60 * 1000)
         const emailResponse =await  sendVerificationEmail(email, fullname, otp )
         if (!emailResponse.success) {
-            return NextResponse.json({ message: "Unable to send verification E-mail . Please try again later", success: false }, { status: 400 })
+            return NextResponse.json({ message: "Unable to send verification E-mail . Please try again later", success: false }, { status: 503 })
         }
         const user = await prisma.user.create({
             data: {
@@ -62,8 +57,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             message: "User created successfully",
             userId: user.id,
-            email: user.email
-        }, { status: 200 })
+            email: user.email,
+            success: true
+        }, { status: 201 })
 
     } catch (error) {
         console.log("Error in signup", error)
