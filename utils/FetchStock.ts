@@ -19,4 +19,3 @@ export async function fetchStocks(symbol: string) {
         return {"success": false , "message":"Unable to fetch data currently"}
     }
 }
-

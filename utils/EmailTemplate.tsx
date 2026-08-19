@@ -1,3 +1,4 @@
+
 import {
   Body,
   Button,
@@ -67,7 +68,7 @@ export const VerificationEmail: React.FC<VerificationEmailProps> = ({
               <Section className="text-center my-8">
                 <Button
                   href={verifyUrl}
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-8 py-3 rounded-md text-base no-underline inline-block transition-colors"
+                  className="bg-indigo-500  text-white font-semibold px-8 py-3 rounded-md text-base no-underline inline-block transition-colors"
                 >
                   Verify Email
                 </Button>

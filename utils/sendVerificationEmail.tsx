@@ -1,13 +1,12 @@
-import { createElement } from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
-import VerificationEmail from '@/utils/EmailTemplate'
+import {VerificationEmail} from '@/utils/EmailTemplate'
 import { transporter } from '@/lib/nodemail'
-import { Credentials } from './validations'
+import {render} from '@react-email/render'
+
 
 export async function sendVerificationEmail(email:string , fullname:string , otp:string) {
   try {
-    const html = renderToStaticMarkup(
-      createElement(VerificationEmail, { otp, fullname, email })
+    const html = await render(
+      <VerificationEmail otp={otp} fullname={fullname}  email={email} />
     )
 
     const result = await transporter.sendMail({

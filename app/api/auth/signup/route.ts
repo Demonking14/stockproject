@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
             }, { status: 400 })
 
         }
-        const emailRegex =/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(email)) {
             return NextResponse.json({
                 message: "Invalid E-mail",
@@ -27,13 +27,28 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({
                 message: "Password length should be greater than or equal to 6 characters",
                 success: false
-            },{status:400})
+            }, { status: 400 })
         }
-        const existingUser = await prisma.user.findUnique({
-            where: {
-                email: email
+        const usernameExist = await prisma.user.findUnique(
+            {
+                where: {
+                    username: username
+                }
             }
-        })
+        )
+        if (usernameExist) {
+            return NextResponse.json({
+                message: "Username already exist",
+                success: false
+            }, { status: 409 })
+        }
+        const existingUser = await prisma.user.findUnique(
+            {
+                where: {
+                    email: email
+                }
+            }
+        )
         if (existingUser) {
             return NextResponse.json({
                 message: "User already exist",
@@ -44,7 +59,7 @@ export async function POST(req: NextRequest) {
         const hashPassword = await bcrypt.hash(password, 10);
         const otp = crypto.randomInt(100000, 999999).toString();
         const otpExpiry = new Date(Date.now() + 15 * 60 * 1000)
-        const emailResponse =await  sendVerificationEmail(email, fullname, otp )
+        const emailResponse = await sendVerificationEmail(email, fullname, otp)
         if (!emailResponse.success) {
             return NextResponse.json({ message: "Unable to send verification E-mail . Please try again later", success: false }, { status: 503 })
         }
